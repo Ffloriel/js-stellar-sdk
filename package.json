@@ -8,27 +8,6 @@
     "dev": "rollup -c rollup.config.js -w",
     "build": "rollup -c rollup.config.js",
     "test": "jest",
-    "old-test": "babel-node ./node_modules/.bin/gulp test",
-    "docs": "jsdoc -c .jsdoc.json --verbose",
-    "preversion": "gulp test",
-    "version": "gulp build",
-    "postversion": "git push && git push --tags",
-    "prettier-all": "prettier --write **/*.js"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "**/*.{js,json}": [
-      "prettier --write",
-      "git add"
-    ],
-    "**/*.js": [
-      "eslint --fix --max-warnings 0",
-      "git add"
-    ]
   },
   "keywords": [
     "stellar"
@@ -47,15 +26,7 @@
   },
   "homepage": "https://github.com/stellar/js-stellar-sdk",
   "devDependencies": {
-    "@babel/cli": "^7.0.0",
-    "@babel/core": "^7.0.0",
-    "@babel/node": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
-    "@babel/register": "^7.0.0",
     "@types/jest": "^24.0.11",
-    "axios-mock-adapter": "^1.16.0",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^24.7.1",
     "jest": "^24.7.1",
     "prettier": "^1.16.1",
     "rollup": "^1.9.0",

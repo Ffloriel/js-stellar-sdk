@@ -14,3 +14,8 @@ export type Link = {
   // Whether the link is templated
   templated: boolean;
 }
+
+export type StellarTomlResolverOptions = {
+  allowHttp?: boolean;
+  timeout?: number;
+}

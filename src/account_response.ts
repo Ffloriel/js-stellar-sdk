@@ -12,36 +12,27 @@ import { Account as BaseAccount } from 'stellar-base';
  * @returns {AccountResponse} AccountResponse instance
  */
 export class AccountResponse {
-  constructor(response) {
-    this._baseAccount = new BaseAccount(response.account_id, response.sequence);
+
+  private baseAccount: BaseAccount;
+
+  constructor(response: any) {
+    this.baseAccount = new BaseAccount(response.account_id, response.sequence);
     // Extract response fields
-    for (const [value, key] in response) {
+    for (const [key, value] of  Object.entries(response)) {
       this[key] = value;
     }
   }
 
-  /**
-   * Get Stellar account public key ex. `GB3KJPLFUYN5VL6R3GU3EGCGVCKFDSD7BEDX42HWG5BWFKB3KQGJJRMA`
-   * @returns {string} accountId
-   */
-  accountId() {
-    return this._baseAccount.accountId();
+  get accountId(): string {
+    return this.baseAccount.accountId();
   }
 
-  /**
-   * Get the current sequence number
-   * @returns {string} sequenceNumber
-   */
-  sequenceNumber() {
-    return this._baseAccount.sequenceNumber();
+  get sequenceNumber(): string {
+    return this.baseAccount.sequenceNumber();
   }
 
-  /**
-   * Increments sequence number in this object by one.
-   * @returns {void}
-   */
-  incrementSequenceNumber() {
-    this._baseAccount.incrementSequenceNumber();
-    this.sequence = this._baseAccount.sequenceNumber();
+
+  public incrementSequenceNumber(): void {
+    this.baseAccount.incrementSequenceNumber();
   }
 }
