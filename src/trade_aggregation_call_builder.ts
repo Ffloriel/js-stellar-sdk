@@ -1,5 +1,6 @@
 import { CallBuilder } from './call_builder';
 import { BadRequestError } from './errors';
+import { Asset } from 'stellar-base';
 
 const allowedResolutions = [
   60000,
@@ -10,30 +11,15 @@ const allowedResolutions = [
   604800000
 ];
 
-/**
- * Trade Aggregations facilitate efficient gathering of historical trade data.
- * Do not create this object directly, use {@link Server#tradeAggregation}.
- *
- * @class TradeAggregationCallBuilder
- * @extends CallBuilder
- * @constructor
- * @param {string} serverUrl serverUrl Horizon server URL.
- * @param {Asset} base base asset
- * @param {Asset} counter counter asset
- * @param {long} start_time lower time boundary represented as millis since epoch
- * @param {long} end_time upper time boundary represented as millis since epoch
- * @param {long} resolution segment duration as millis since epoch. *Supported values are 1 minute (60000), 5 minutes (300000), 15 minutes (900000), 1 hour (3600000), 1 day (86400000) and 1 week (604800000).
- * @param {long} offset segments can be offset using this parameter. Expressed in milliseconds. *Can only be used if the resolution is greater than 1 hour. Value must be in whole hours, less than the provided resolution, and less than 24 hours.
- */
 export class TradeAggregationCallBuilder extends CallBuilder {
   constructor(
-    serverUrl,
-    base,
-    counter,
-    start_time,
-    end_time,
-    resolution,
-    offset
+    serverUrl: uri.URI,
+    base: Asset,
+    counter: Asset,
+    start_time: number,
+    end_time: number,
+    resolution: number,
+    offset: number
   ) {
     super(serverUrl);
 
@@ -55,45 +41,26 @@ export class TradeAggregationCallBuilder extends CallBuilder {
     if (typeof start_time === 'undefined' || typeof end_time === 'undefined') {
       throw new BadRequestError('Invalid time bounds', [start_time, end_time]);
     } else {
-      this.url.setQuery('start_time', start_time);
-      this.url.setQuery('end_time', end_time);
+      this.url.setQuery('start_time', start_time.toString());
+      this.url.setQuery('end_time', end_time.toString());
     }
     if (!this.isValidResolution(resolution)) {
       throw new BadRequestError('Invalid resolution', resolution);
     } else {
-      this.url.setQuery('resolution', resolution);
+      this.url.setQuery('resolution', resolution.toString());
     }
     if (!this.isValidOffset(offset, resolution)) {
       throw new BadRequestError('Invalid offset', offset);
     } else {
-      this.url.setQuery('offset', offset);
+      this.url.setQuery('offset', offset.toString());
     }
   }
 
-  /**
-   * @private
-   * @param {long} resolution Trade data resolution in milliseconds
-   * @returns {boolean} true if the resolution is allowed
-   */
-  isValidResolution(resolution) {
-    let found = false;
-
-    for (let i = 0; i < allowedResolutions.length; i += 1) {
-      if (allowedResolutions[i] === resolution) {
-        found = true;
-        break;
-      }
-    }
-    return found;
+  private isValidResolution(resolution: number): boolean {
+    return allowedResolutions.includes(resolution);
   }
 
-  /**
-   * @private
-   * @param {long} offset Time offset in milliseconds
-   * @param {long} resolution Trade data resolution in milliseconds
-   * @returns {boolean} true if the offset is valid
-   */
-  isValidOffset(offset, resolution) {
+  private isValidOffset(offset: number, resolution: number): boolean {
     const hour = 3600000;
     return !(offset > resolution || offset >= 24 * hour || offset % hour !== 0);
   }

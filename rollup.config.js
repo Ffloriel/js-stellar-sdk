@@ -1,5 +1,7 @@
-import typescript from 'rollup-plugin-typescript2'
-import pkg from './package.json'
+import typescript from 'rollup-plugin-typescript2';
+import json from 'rollup-plugin-json';
+import commonjs from 'rollup-plugin-commonjs';
+import pkg from './package.json';
 
 export default {
   input: 'src/index.ts',
@@ -17,7 +19,9 @@ export default {
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.peerDependencies || {}),
   ],
-plugins: [
+  plugins: [
+    commonjs(),
+    json(),
     typescript(),
   ],
 }

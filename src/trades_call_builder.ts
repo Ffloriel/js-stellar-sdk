@@ -1,28 +1,13 @@
 import { CallBuilder } from './call_builder';
+import { Asset } from 'stellar-base';
 
-/**
- * Creates a new {@link TradesCallBuilder} pointed to server defined by serverUrl.
- * Do not create this object directly, use {@link Server#trades}.
- *
- * @class TradesCallBuilder
- * @extends CallBuilder
- * @constructor
- * @see [Trades](https://www.stellar.org/developers/horizon/reference/endpoints/trades.html)
- * @param {string} serverUrl serverUrl Horizon server URL.
- */
 export class TradesCallBuilder extends CallBuilder {
-  constructor(serverUrl) {
+  constructor(serverUrl: uri.URI) {
     super(serverUrl);
     this.url.segment('trades');
   }
 
-  /**
-   * Filter trades for a specific asset pair (orderbook)
-   * @param {Asset} base asset
-   * @param {Asset} counter asset
-   * @returns {TradesCallBuilder} current TradesCallBuilder instance
-   */
-  forAssetPair(base, counter) {
+  forAssetPair(base: Asset, counter: Asset): TradesCallBuilder {
     if (!base.isNative()) {
       this.url.setQuery('base_asset_type', base.getAssetType());
       this.url.setQuery('base_asset_code', base.getCode());
@@ -40,23 +25,12 @@ export class TradesCallBuilder extends CallBuilder {
     return this;
   }
 
-  /**
-   * Filter trades for a specific offer
-   * @param {string} offerId ID of the offer
-   * @returns {TradesCallBuilder} current TradesCallBuilder instance
-   */
-  forOffer(offerId) {
+  forOffer(offerId: string): TradesCallBuilder {
     this.url.setQuery('offer_id', offerId);
     return this;
   }
 
-  /**
-   * Filter trades for a specific account
-   * @see [Trades for Account](https://www.stellar.org/developers/horizon/reference/trades-for-account.html)
-   * @param {string} accountId For example: `GBYTR4MC5JAX4ALGUBJD7EIKZVM7CUGWKXIUJMRSMK573XH2O7VAK3SR`
-   * @returns {TradesCallBuilder} current TradesCallBuilder instance
-   */
-  forAccount(accountId) {
+  forAccount(accountId: string): TradesCallBuilder {
     this.filter.push(['accounts', accountId, 'trades']);
     return this;
   }

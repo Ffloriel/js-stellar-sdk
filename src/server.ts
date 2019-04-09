@@ -3,7 +3,6 @@ import { xdr, StrKey, Asset, Transaction } from 'stellar-base';
 import BigNumber from 'bignumber.js';
 
 import { BadResponseError } from './errors';
-
 import { AccountCallBuilder } from './account_call_builder';
 import { AccountResponse } from './account_response';
 import { CallBuilder } from './call_builder';
@@ -20,13 +19,10 @@ import { TradesCallBuilder } from './trades_call_builder';
 import { PathCallBuilder } from './path_call_builder';
 import { PaymentCallBuilder } from './payment_call_builder';
 import { EffectCallBuilder } from './effect_call_builder';
-import { FriendbotBuilder } from './friendbot_builder';
 import { AssetsCallBuilder } from './assets_call_builder';
 import { TradeAggregationCallBuilder } from './trade_aggregation_call_builder';
 
-import { ServerOptions, Timebounds } from './server.d'
-import { FeeStats } from './api';
-
+import { ServerOptions, Timebounds, FeeStats } from '@/types/'
 
 export const SUBMIT_TRANSACTION_TIMEOUT = 60 * 1000;
 
@@ -37,10 +33,6 @@ function _getAmountInLumens(amt: BigNumber.Value) {
 }
 
 
-/**
- * Server handles the network connection to a [Horizon](https://www.stellar.org/developers/horizon/learn/index.html)
- * instance and exposes an interface for requests to that instance.
- */
 export class Server {
 
   // serverURL Horizon Server URL (ex. `https://horizon-testnet.stellar.org`).
@@ -79,7 +71,7 @@ export class Server {
 
     // otherwise, retry (by calling the root endpoint)
     // toString automatically adds the trailing slash
-    await HorizonAxiosClient.get(URI(this.serverURL).toString());
+    await HorizonAxiosClient.get(this.serverURL.toString());
     return await this.fetchTimebounds(seconds, true);
   }
 
@@ -95,7 +87,7 @@ export class Server {
   }
 
   operationFeeStats(): Promise<FeeStats> {
-    const cb = new CallBuilder(URI(this.serverURL));
+    const cb = new CallBuilder(this.serverURL);
     cb.filter.push(['operation_fee_stats']);
     return cb.call();
   }
@@ -109,7 +101,7 @@ export class Server {
     );
 
     try {
-      const response = await HorizonAxiosClient.post(URI(this.serverURL)
+      const response = await HorizonAxiosClient.post(this.serverURL
         .segment('transactions')
         .toString(), `tx=${tx}`, { timeout: SUBMIT_TRANSACTION_TIMEOUT });
       if (!response.data.result_xdr) {
@@ -120,7 +112,7 @@ export class Server {
       let offerResults;
       let hasManageOffer;
       if (results.length) {
-        offerResults = results.map((result, i) => {
+        offerResults = results.map((result: any, i: number) => {
           if (result.value().switch().name !== 'manageOffer') {
             return null;
           }
@@ -131,7 +123,7 @@ export class Server {
             .value()
             .success();
           const offersClaimed = offerSuccess.offersClaimed()
-            .map((offerClaimed) => {
+            .map((offerClaimed: any) => {
               const claimedOfferAmountBought = new BigNumber(
                 // amountBought is a js-xdr hyper
                 offerClaimed.amountBought().toString());
@@ -222,40 +214,40 @@ export class Server {
   }
 
   accounts(): AccountCallBuilder {
-    return new AccountCallBuilder(URI(this.serverURL));
+    return new AccountCallBuilder(this.serverURL);
   }
 
   ledgers(): LedgerCallBuilder {
-    return new LedgerCallBuilder(URI(this.serverURL));
+    return new LedgerCallBuilder(this.serverURL);
   }
 
   transactions(): TransactionCallBuilder {
-    return new TransactionCallBuilder(URI(this.serverURL));
+    return new TransactionCallBuilder(this.serverURL);
   }
 
   offers(resource: string, ...resourceParams: string[]): OfferCallBuilder {
     return new OfferCallBuilder(
-      URI(this.serverURL),
+      this.serverURL,
       resource,
       ...resourceParams
     );
   }
 
   orderbook(selling: Asset, buying: Asset): OrderbookCallBuilder {
-    return new OrderbookCallBuilder(URI(this.serverURL), selling, buying);
+    return new OrderbookCallBuilder(this.serverURL, selling, buying);
   }
 
   trades(): TradesCallBuilder {
-    return new TradesCallBuilder(URI(this.serverURL));
+    return new TradesCallBuilder(this.serverURL);
   }
 
   operations(): OperationCallBuilder {
-    return new OperationCallBuilder(URI(this.serverURL));
+    return new OperationCallBuilder(this.serverURL);
   }
 
   paths(source: string, destination: string, destinationAsset: Asset, destinationAmount: string): PathCallBuilder {
     return new PathCallBuilder(
-      URI(this.serverURL),
+      this.serverURL,
       source,
       destination,
       destinationAsset,
@@ -264,19 +256,15 @@ export class Server {
   }
 
   payments(): PaymentCallBuilder {
-    return new PaymentCallBuilder(URI(this.serverURL));
+    return new PaymentCallBuilder(this.serverURL);
   }
 
   effects(): EffectCallBuilder {
-    return new EffectCallBuilder(URI(this.serverURL));
-  }
-
-  private friendbot(address: string): FriendbotBuilder {
-    return new FriendbotBuilder(URI(this.serverURL), address);
+    return new EffectCallBuilder(this.serverURL);
   }
 
   assets(): AssetsCallBuilder {
-    return new AssetsCallBuilder(URI(this.serverURL));
+    return new AssetsCallBuilder(this.serverURL);
   }
 
   async loadAccount(accountId: string): Promise<AccountResponse> {
@@ -288,7 +276,7 @@ export class Server {
 
   tradeAggregation(base: Asset, counter: Asset, start_time: number, end_time: number, resolution: number, offset: number): TradeAggregationCallBuilder {
     return new TradeAggregationCallBuilder(
-      URI(this.serverURL),
+      this.serverURL,
       base,
       counter,
       start_time,

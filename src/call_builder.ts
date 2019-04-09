@@ -3,27 +3,26 @@ import URITemplate from 'urijs/src/URITemplate';
 
 import { isNode } from '@/utils'
 import HorizonAxiosClient from '@/horizon_axios_client';
-import { version } from '../package.json';
+import { version } from './../package.json';
 import { NotFoundError, NetworkError, BadRequestError } from './errors';
-import { Link } from './server.js';
+import { Link, FeeStats } from './types/index.js';
+import { EventSourceOptions } from './types/eventSource.js';
 
-let EventSource;
+interface Constructable<T> {
+  new(e:string) : T;
+}
+declare global {
+  interface Window { EventSource: Constructable<EventSource>; }
+}
+
+let EventSource: Constructable<EventSource>;
 
 if (isNode) {
-  // eslint-disable-next-line
   EventSource = require('eventsource');
 } else {
-  // eslint-disable-next-line
   EventSource = window.EventSource;
 }
 
-/**
- * Creates a new {@link CallBuilder} pointed to server defined by serverUrl.
- *
- * This is an **abstract** class. Do not create this object directly, use {@link Server} class.
- * @param {string} serverUrl URL of Horizon server
- * @class CallBuilder
- */
 export class CallBuilder {
 
   url: uri.URI
@@ -58,30 +57,19 @@ export class CallBuilder {
     return this._parseResponse(r);
   }
 
-  /**
-   * Creates an EventSource that listens for incoming messages from the server. To stop listening for new
-   * events call the function returned by this method.
-   * @see [Horizon Response Format](https://www.stellar.org/developers/horizon/learn/responses.html)
-   * @see [MDN EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource)
-   * @param {object} [options] EventSource options.
-   * @param {function} [options.onmessage] Callback function to handle incoming messages.
-   * @param {function} [options.onerror] Callback function to handle errors.
-   * @param {number} [options.reconnectTimeout] Custom stream connection timeout in ms, default is 15 seconds.
-   * @returns {function} Close function. Run to close the connection and stop listening for new events.
-   */
-  stream(options = {}) {
+  stream(options: EventSourceOptions = {}) {
     this.checkFilter();
 
     this.url.setQuery('X-Client-Name', 'js-stellar-sdk');
     this.url.setQuery('X-Client-Version', version);
 
     // EventSource object
-    let es;
+    let es: EventSource;
     // timeout is the id of the timeout to be triggered if there were no new messages
     // in the last 15 seconds. The timeout is reset when a new message arrive.
     // It prevents closing EventSource object in case of 504 errors as `readyState`
     // property is not reliable.
-    let timeout;
+    let timeout: NodeJS.Timeout;
 
     const createTimeout = () => {
       timeout = setTimeout(() => {
@@ -92,13 +80,11 @@ export class CallBuilder {
 
     const createEventSource = () => {
       try {
-        es = new EventSource(this.url.toString());
+        es = new EventSource(this.url.toString());        
       } catch (err) {
         if (options.onerror) {
           options.onerror(err);
-          options.onerror('EventSource not supported');
         }
-        return false;
       }
 
       createTimeout();
@@ -112,11 +98,13 @@ export class CallBuilder {
         }
         clearTimeout(timeout);
         createTimeout();
-        options.onmessage(result);
+        if (typeof options.onmessage !== 'undefined') {
+          options.onmessage(result);
+        }
       };
 
       es.onerror = (error) => {
-        if (options.onerror) {
+        if (options.onerror && error instanceof MessageEvent) {
           options.onerror(error);
         }
       };
@@ -132,45 +120,37 @@ export class CallBuilder {
   }
 
   private _requestFnForLink(link: Link): Function {
-    return (opts) => {
+    return async (opts: any) => {
       let uri;
 
       if (link.templated) {
         const template = URITemplate(link.href);
-        uri = URI(template.expand(opts || {}));
+        uri = template.expand(opts || {});
       } else {
         uri = URI(link.href);
       }
 
-      return this._sendNormalRequest(uri).then((r) => this._parseResponse(r));
+      const r = await this._sendNormalRequest(uri);
+      return this._parseResponse(r);
     };
   }
 
-  /**
-   * Given the json response, find and convert each link into a function that
-   * calls that link.
-   * @private
-   * @param {object} json JSON response
-   * @returns {object} JSON response with string links replaced with functions
-   */
-  _parseRecord(json) {
+  private _parseRecord(json: FeeStats): any {
     if (!json._links) {
       return json;
     }
     for (const [key, n] of Object.entries(json._links)) {
       // If the key with the link name already exists, create a copy
       if (typeof json[key] !== 'undefined') {
-        // eslint-disable-next-line no-param-reassign
         json[`${key}_attr`] = json[key];
       }
 
-      // eslint-disable-next-line no-param-reassign
       json[key] = this._requestFnForLink(n);
     }
     return json;
   }
 
-  _sendNormalRequest(initialUrl: uri.URI) {
+  private _sendNormalRequest(initialUrl: uri.URI) {
     let url = initialUrl;
 
     if (url.authority() === '') {
@@ -188,11 +168,6 @@ export class CallBuilder {
       .catch(this._handleNetworkError);
   }
 
-  /**
-   * @private
-   * @param {object} json Response object
-   * @returns {object} Extended response
-   */
   private _parseResponse(json: any) {
     if (json._embedded && json._embedded.records) {
       return this._toCollectionPage(json);
@@ -200,11 +175,6 @@ export class CallBuilder {
     return this._parseRecord(json);
   }
 
-  /**
-   * @private
-   * @param {object} json Response object
-   * @returns {object} Extended response object
-   */
   private _toCollectionPage(json: any) {
     for (let i = 0; i < json._embedded.records.length; i += 1) {
       // eslint-disable-next-line no-param-reassign

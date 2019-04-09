@@ -1,0 +1,37 @@
+import { Asset, Transaction } from 'stellar-base';
+import { AccountCallBuilder } from './account_call_builder';
+import { AccountResponse } from './account_response';
+import { LedgerCallBuilder } from './ledger_call_builder';
+import { TransactionCallBuilder } from './transaction_call_builder';
+import { OperationCallBuilder } from './operation_call_builder';
+import { OfferCallBuilder } from './offer_call_builder';
+import { OrderbookCallBuilder } from './orderbook_call_builder';
+import { TradesCallBuilder } from './trades_call_builder';
+import { PathCallBuilder } from './path_call_builder';
+import { PaymentCallBuilder } from './payment_call_builder';
+import { EffectCallBuilder } from './effect_call_builder';
+import { AssetsCallBuilder } from './assets_call_builder';
+import { TradeAggregationCallBuilder } from './trade_aggregation_call_builder';
+import { ServerOptions, Timebounds, FeeStats } from '@/types/';
+export declare const SUBMIT_TRANSACTION_TIMEOUT: number;
+export declare class Server {
+    serverURL: uri.URI;
+    constructor(serverURL: string, opts?: ServerOptions);
+    fetchTimebounds(seconds: number, _isRetry?: boolean): Promise<Timebounds>;
+    fetchBaseFee(): Promise<number>;
+    operationFeeStats(): Promise<FeeStats>;
+    submitTransaction(transaction: Transaction): Promise<any>;
+    accounts(): AccountCallBuilder;
+    ledgers(): LedgerCallBuilder;
+    transactions(): TransactionCallBuilder;
+    offers(resource: string, ...resourceParams: string[]): OfferCallBuilder;
+    orderbook(selling: Asset, buying: Asset): OrderbookCallBuilder;
+    trades(): TradesCallBuilder;
+    operations(): OperationCallBuilder;
+    paths(source: string, destination: string, destinationAsset: Asset, destinationAmount: string): PathCallBuilder;
+    payments(): PaymentCallBuilder;
+    effects(): EffectCallBuilder;
+    assets(): AssetsCallBuilder;
+    loadAccount(accountId: string): Promise<AccountResponse>;
+    tradeAggregation(base: Asset, counter: Asset, start_time: number, end_time: number, resolution: number, offset: number): TradeAggregationCallBuilder;
+}
