@@ -1,7 +1,7 @@
 import axios from 'axios';
 import toml from 'toml';
 import { Config } from './config';
-import { StellarTomlResolverOptions } from '@/types/'
+import { StellarTomlResolverOptions } from './types/'
 
 // STELLAR_TOML_MAX_SIZE is the maximum size of stellar.toml file
 export const STELLAR_TOML_MAX_SIZE = 100 * 1024;

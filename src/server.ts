@@ -22,7 +22,7 @@ import { EffectCallBuilder } from './effect_call_builder';
 import { AssetsCallBuilder } from './assets_call_builder';
 import { TradeAggregationCallBuilder } from './trade_aggregation_call_builder';
 
-import { ServerOptions, Timebounds, FeeStats } from '@/types/'
+import { ServerOptions, Timebounds, FeeStats } from './types/'
 
 export const SUBMIT_TRANSACTION_TIMEOUT = 60 * 1000;
 

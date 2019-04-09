@@ -1,8 +1,8 @@
 import URI from 'urijs';
 import URITemplate from 'urijs/src/URITemplate';
 
-import { isNode } from '@/utils'
-import HorizonAxiosClient from '@/horizon_axios_client';
+import { isNode } from './utils'
+import HorizonAxiosClient from './horizon_axios_client';
 import { version } from './../package.json';
 import { NotFoundError, NetworkError, BadRequestError } from './errors';
 import { Link, FeeStats } from './types/index.js';

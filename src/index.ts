@@ -15,3 +15,5 @@ export { default as HorizonAxiosClient } from './horizon_axios_client';
 
 // expose classes and functions from stellar-base
 export * from 'stellar-base';
+
+export default module.exports;

@@ -1,18 +1,22 @@
-const MockAdapter = require('axios-mock-adapter');
+import StellarSdk, { HorizonAxiosClient } from '@/index'
+import MockAdapter from 'axios-mock-adapter';
+import sinon from 'sinon';
 
 describe('server.js non-transaction tests', function() {
+  let server: any;
+  let axiosMock: any;
   beforeEach(function() {
-    this.server = new StellarSdk.Server(
+    server = new StellarSdk.Server(
       'https://horizon-live.stellar.org:1337'
     );
-    this.axiosMock = sinon.mock(HorizonAxiosClient);
+    axiosMock = sinon.mock(HorizonAxiosClient);
     StellarSdk.Config.setDefault();
     StellarSdk.Network.useTestNetwork();
   });
 
   afterEach(function() {
-    this.axiosMock.verify();
-    this.axiosMock.restore();
+    axiosMock.verify();
+    axiosMock.restore();
   });
 
   describe('Server.constructor', function() {
@@ -41,6 +45,7 @@ describe('server.js non-transaction tests', function() {
 
   describe('Server.fetchTimebounds', function() {
     let clock;
+    let axiosMockAdapter;
 
     beforeEach(function() {
       // set now to 10050 seconds
@@ -191,6 +196,8 @@ describe('server.js non-transaction tests', function() {
   });
 
   describe('Server.loadAccount', function() {
+    let axiosMock: any;
+    let server: any;
     //prettier-ignore
     let accountResponse = {
       "_links": {
@@ -269,7 +276,7 @@ describe('server.js non-transaction tests', function() {
     };
 
     it('returns AccountResponse object', function(done) {
-      this.axiosMock
+      axiosMock
         .expects('get')
         .withArgs(
           sinon.match(
@@ -278,7 +285,7 @@ describe('server.js non-transaction tests', function() {
         )
         .returns(Promise.resolve({ data: accountResponse }));
 
-      this.server
+      server
         .loadAccount('GBAH7FQMC3CZJ4WD6GE7G7YXCIU36LC2IHXQ7D5MQAUO4PODOWIVLSFS')
         .then((response) => {
           // Response data

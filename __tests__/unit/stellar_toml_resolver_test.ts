@@ -1,23 +1,35 @@
-const http = require('http');
+import http from 'http';
+import axios from 'axios';
+import sinon from 'sinon';
+import StellarSdk from './../../src/index';
 
 describe('stellar_toml_resolver.js tests', function() {
+  let axiosMock: any;
+
   beforeEach(function() {
-    this.axiosMock = sinon.mock(axios);
+    axiosMock = sinon.mock(axios);
     StellarSdk.Config.setDefault();
   });
 
   afterEach(function() {
-    this.axiosMock.verify();
-    this.axiosMock.restore();
+    axiosMock.verify();
+    axiosMock.restore();
   });
 
   describe('StellarTomlResolver.resolve', function() {
+    beforeEach(function() {
+      axiosMock = sinon.mock(axios);
+      StellarSdk.Config.setDefault();
+    });
+  
     afterEach(function() {
       StellarSdk.Config.setDefault();
+      axiosMock.verify();
+      axiosMock.restore();
     });
 
     it('returns stellar.toml object for valid request and stellar.toml file', function(done) {
-      this.axiosMock
+      axiosMock
         .expects('get')
         .withArgs(sinon.match('https://acme.com/.well-known/stellar.toml'))
         .returns(
@@ -30,8 +42,8 @@ FEDERATION_SERVER="https://api.stellar.org/federation"
           })
         );
 
-      StellarSdk.StellarTomlResolver.resolve('acme.com').then((stellarToml) => {
-        expect(stellarToml.FEDERATION_SERVER).equals(
+      StellarSdk.StellarTomlResolver.resolve('acme.com').then((stellarToml: any) => {
+        expect(stellarToml.FEDERATION_SERVER).toBe(
           'https://api.stellar.org/federation'
         );
         done();
@@ -39,7 +51,7 @@ FEDERATION_SERVER="https://api.stellar.org/federation"
     });
 
     it('returns stellar.toml object for valid request and stellar.toml file when allowHttp is `true`', function(done) {
-      this.axiosMock
+      axiosMock
         .expects('get')
         .withArgs(sinon.match('http://acme.com/.well-known/stellar.toml'))
         .returns(
@@ -54,8 +66,8 @@ FEDERATION_SERVER="http://api.stellar.org/federation"
 
       StellarSdk.StellarTomlResolver.resolve('acme.com', {
         allowHttp: true
-      }).then((stellarToml) => {
-        expect(stellarToml.FEDERATION_SERVER).equals(
+      }).then((stellarToml: any) => {
+        expect(stellarToml.FEDERATION_SERVER).toBe(
           'http://api.stellar.org/federation'
         );
         done();
@@ -65,7 +77,7 @@ FEDERATION_SERVER="http://api.stellar.org/federation"
     it('returns stellar.toml object for valid request and stellar.toml file when global Config.allowHttp flag is set', function(done) {
       StellarSdk.Config.setAllowHttp(true);
 
-      this.axiosMock
+      axiosMock
         .expects('get')
         .withArgs(sinon.match('http://acme.com/.well-known/stellar.toml'))
         .returns(
@@ -78,42 +90,46 @@ FEDERATION_SERVER="http://api.stellar.org/federation"
           })
         );
 
-      StellarSdk.StellarTomlResolver.resolve('acme.com').then((stellarToml) => {
-        expect(stellarToml.FEDERATION_SERVER).equals(
+      StellarSdk.StellarTomlResolver.resolve('acme.com').then((stellarToml: any) => {
+        expect(stellarToml.FEDERATION_SERVER).toBe(
           'http://api.stellar.org/federation'
         );
         done();
       });
     });
 
-    it('rejects when stellar.toml file is invalid', function(done) {
-      this.axiosMock
+    it('rejects when stellar.toml file is invalid', async () => {
+      axiosMock
         .expects('get')
         .withArgs(sinon.match('https://acme.com/.well-known/stellar.toml'))
         .returns(
           Promise.resolve({
             data: `
-/#   The endpoint which clients should query to resolve stellar addresses
-#   for users on your domain.
-FEDERATION_SERVER="https://api.stellar.org/federation"
-`
+              /#   The endpoint which clients should query to resolve stellar addresses
+              #   for users on your domain.
+              FEDERATION_SERVER="https://api.stellar.org/federation"
+              `
           })
         );
 
-      StellarSdk.StellarTomlResolver.resolve('acme.com')
-        .should.be.rejectedWith(/Parsing error on line/)
-        .and.notify(done);
+      expect.assertions(1);
+      return StellarSdk.StellarTomlResolver.resolve('acme.com')
+          .catch(function(e: any) {
+            expect(e.message).toMatch(/Parsing error on line/);
+          })
     });
 
-    it('rejects when there was a connection error', function(done) {
-      this.axiosMock
+    it('rejects when there was a connection error', async () => {
+      axiosMock
         .expects('get')
         .withArgs(sinon.match('https://acme.com/.well-known/stellar.toml'))
-        .returns(Promise.reject());
+        .returns(Promise.reject(new Error('connection error')));
 
-      StellarSdk.StellarTomlResolver.resolve(
-        'acme.com'
-      ).should.be.rejected.and.notify(done);
+      expect.assertions(1);
+      return StellarSdk.StellarTomlResolver.resolve('acme.com')
+        .catch(function(e: any) {
+          expect(e.message).toBe('connection error')
+        })
     });
 
     it('fails when response exceeds the limit', function(done) {

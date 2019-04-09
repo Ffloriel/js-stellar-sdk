@@ -1,9 +1,15 @@
+import StellarSdk, { HorizonAxiosClient } from '@/index'
+
 describe('server.js transaction tests', function() {
+  let server: any;
+  let axiosMock: any;
+  let transaction: any;
+  let blob: any;
   beforeEach(function() {
-    this.server = new StellarSdk.Server(
+    server = new StellarSdk.Server(
       'https://horizon-live.stellar.org:1337'
     );
-    this.axiosMock = sinon.mock(HorizonAxiosClient);
+    axiosMock = sinon.mock(HorizonAxiosClient);
     StellarSdk.Config.setDefault();
     StellarSdk.Network.useTestNetwork();
 
@@ -22,8 +28,8 @@ describe('server.js transaction tests', function() {
       .build();
     transaction.sign(keypair);
 
-    this.transaction = transaction;
-    this.blob = encodeURIComponent(
+    transaction = transaction;
+    blob = encodeURIComponent(
       transaction
         .toEnvelope()
         .toXDR()
@@ -32,20 +38,20 @@ describe('server.js transaction tests', function() {
   });
 
   afterEach(function() {
-    this.axiosMock.verify();
-    this.axiosMock.restore();
+    axiosMock.verify();
+    axiosMock.restore();
   });
   it('sends a transaction', function(done) {
-    this.axiosMock
+    axiosMock
       .expects('post')
       .withArgs(
         'https://horizon-live.stellar.org:1337/transactions',
-        `tx=${this.blob}`
+        `tx=${blob}`
       )
       .returns(Promise.resolve({ data: {} }));
 
-    this.server
-      .submitTransaction(this.transaction)
+    server
+      .submitTransaction(transaction)
       .then(function() {
         done();
       })
@@ -70,16 +76,16 @@ describe('server.js transaction tests', function() {
         'AAAAAQAAAAIAAAADAV1cFQAAAAAAAAAAhQARbeNC3f59tPqcIBIDX/xFZ2n18nbCjGo8dk9BQf8AAAACU4RoUgEH/OgAAAAiAAAABQAAAAEAAAAAhD8BLsZFQEF33rKS6YopQUT3b6iLBG4nspe68/DBNBYAAAAAAAAAAAEAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBXVwVAAAAAAAAAACFABFt40Ld/n20+pwgEgNf/EVnafXydsKMajx2T0FB/wAAAAJThGhSAQf86AAAACMAAAAFAAAAAQAAAACEPwEuxkVAQXfespLpiilBRPdvqIsEbieyl7rz8ME0FgAAAAAAAAAAAQAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAA='
     };
 
-    this.axiosMock
+    axiosMock
       .expects('post')
       .withArgs(
         'https://horizon-live.stellar.org:1337/transactions',
-        `tx=${this.blob}`
+        `tx=${blob}`
       )
       .returns(Promise.resolve({ data: response }));
 
-    this.server
-      .submitTransaction(this.transaction)
+    server
+      .submitTransaction(transaction)
       .then(function(res) {
         expect(res.offerResults).to.be.an.instanceOf(Array);
         expect(res.offerResults[0].offersClaimed).to.be.an.instanceOf(Array);
@@ -117,15 +123,15 @@ describe('server.js transaction tests', function() {
         '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'
     };
 
-    this.axiosMock
+    axiosMock
       .expects('post')
       .withArgs(
         'https://horizon-live.stellar.org:1337/transactions',
-        `tx=${this.blob}`
+        `tx=${blob}`
       )
       .returns(Promise.resolve({ data: response }));
 
-    this.server
+    server
       .submitTransaction(this.transaction)
       .then(function(res) {
         expect(res.offerResults).to.be.an.instanceOf(Array);
@@ -298,16 +304,16 @@ describe('server.js transaction tests', function() {
         'AAAAAQAAAAIAAAADAV1ZggAAAAAAAAAAhQARbeNC3f59tPqcIBIDX/xFZ2n18nbCjGo8dk9BQf8AAAACVLWW4QEH/OgAAAAeAAAABQAAAAEAAAAAhD8BLsZFQEF33rKS6YopQUT3b6iLBG4nspe68/DBNBYAAAAAAAAAAAEAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBXVmCAAAAAAAAAACFABFt40Ld/n20+pwgEgNf/EVnafXydsKMajx2T0FB/wAAAAJUtZbhAQf86AAAAB8AAAAFAAAAAQAAAACEPwEuxkVAQXfespLpiilBRPdvqIsEbieyl7rz8ME0FgAAAAAAAAAAAQAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAIAAAADAVqyvQAAAAEAAAAAhQARbeNC3f59tPqcIBIDX/xFZ2n18nbCjGo8dk9BQf8AAAABQkFUAAAAAABGStPbx5szphDKFVmLW22XCr92TqKNOnJM24cgyBSn4QAAAAAAAAAAf/////////8AAAABAAAAAAAAAAAAAAABAV1ZggAAAAEAAAAAhQARbeNC3f59tPqcIBIDX/xFZ2n18nbCjGo8dk9BQf8AAAABQkFUAAAAAABGStPbx5szphDKFVmLW22XCr92TqKNOnJM24cgyBSn4QAAAAAAAAAAf/////////8AAAABAAAAAAAAAAAAAAACAAAAAwFdWYIAAAAAAAAAAIUAEW3jQt3+fbT6nCASA1/8RWdp9fJ2woxqPHZPQUH/AAAAAlS1luEBB/zoAAAAHwAAAAUAAAABAAAAAIQ/AS7GRUBBd96ykumKKUFE92+oiwRuJ7KXuvPwwTQWAAAAAAAAAAABAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAV1ZggAAAAAAAAAAhQARbeNC3f59tPqcIBIDX/xFZ2n18nbCjGo8dk9BQf8AAAACVLWW4QEH/OgAAAAfAAAABQAAAAEAAAAAhD8BLsZFQEF33rKS6YopQUT3b6iLBG4nspe68/DBNBYAAAAAAAAAAAEAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
     };
 
-    this.axiosMock
+    axiosMock
       .expects('post')
       .withArgs(
         'https://horizon-live.stellar.org:1337/transactions',
-        `tx=${this.blob}`
+        `tx=${blob}`
       )
       .returns(Promise.resolve({ data: response }));
 
-    this.server
-      .submitTransaction(this.transaction)
+    server
+      .submitTransaction(transaction)
       .then(function(res) {
         expect(res.offerResults).to.be.an.instanceOf(Array);
         expect(res.offerResults).to.have.lengthOf(2);

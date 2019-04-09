@@ -1,7 +1,7 @@
 import http from 'http';
 import axios from 'axios';
-import { Config } from '../../src/config';
-import StellarSdk from '../../src/'
+import { Config } from '@/config';
+import StellarSdk from '@/index';
 
 describe('federation-server.js tests', function() {
   beforeEach(function() {

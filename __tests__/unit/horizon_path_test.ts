@@ -1,3 +1,5 @@
+import StellarSdk from '@/index'
+
 describe('horizon path tests', function() {
   beforeEach(function() {
     this.axiosMock = sinon.mock(HorizonAxiosClient);
