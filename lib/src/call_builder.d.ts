@@ -13,10 +13,6 @@ export declare class CallBuilder {
     originalSegments: string[];
     constructor(serverUrl: uri.URI);
     private checkFilter;
-    /**
-     * Triggers a HTTP request using this builder's current configuration.
-     * @returns {Promise} a Promise that resolves to the server's response.
-     */
     call(): Promise<any>;
     stream(options?: EventSourceOptions): () => void;
     private _requestFnForLink;

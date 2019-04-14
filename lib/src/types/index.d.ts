@@ -22,11 +22,9 @@ export declare type FederationServerResponse = {
     memo_type?: string;
     memo?: string;
 };
-export declare type ServerTimeMap = {
-    [index: string]: {
-        serverTime: number;
-        localTimeRecorded: number;
-    };
+export declare type ServerTime = {
+    serverTime: number;
+    localTimeRecorded: number;
 };
 export interface ApiJsonResponse {
     [index: string]: any;

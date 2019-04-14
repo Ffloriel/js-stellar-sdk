@@ -1,4 +1,4 @@
-import { StellarTomlResolverOptions } from '@/types/';
+import { StellarTomlResolverOptions } from './types/';
 export declare const STELLAR_TOML_MAX_SIZE: number;
 /**
  * StellarTomlResolver allows resolving `stellar.toml` files.

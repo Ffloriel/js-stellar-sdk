@@ -42,7 +42,7 @@ export class Server {
     this.serverURL = URI(serverURL);
 
     const allowHttp = typeof opts.allowHttp === 'undefined'
-      ? Config.isAllowHttp
+      ? Config.isAllowHttp()
       : opts.allowHttp;
 
     if (this.serverURL.protocol() !== 'https' && !allowHttp) {

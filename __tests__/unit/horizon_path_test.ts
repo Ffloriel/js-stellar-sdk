@@ -1,168 +1,115 @@
-import StellarSdk from '@/index'
+import axios, { AxiosResponse } from 'axios';
+import { when } from 'jest-when';
+import StellarSdk from './../../src/index'
 
-describe('horizon path tests', function() {
-  beforeEach(function() {
-    this.axiosMock = sinon.mock(HorizonAxiosClient);
+const axiosMock = axios as jest.Mocked<typeof axios>;
+axiosMock.get = jest.fn();
+
+const prepareAxios = (serverUrl: string, endpoint: string, randomResult: AxiosResponse) => {
+  randomResult.data.endpoint = endpoint;
+  when(axiosMock.get).calledWith(`${serverUrl}${endpoint}`).mockResolvedValue(randomResult);
+}
+
+const testHorizonPaths = (serverUrl: string) => {
+  const server = new StellarSdk.Server(serverUrl);
+  const randomResult: AxiosResponse = {
+    data: {
+      url: serverUrl,
+      random: Math.round(1000 * Math.random()),
+      endpoint: 'bogus'
+    },
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: {}
+  };
+
+  it(`server.accounts() ${serverUrl}`, async () => {
+    prepareAxios(serverUrl, '/accounts', randomResult);
+    expect.assertions(1);
+    const accounts = await server.accounts().call();
+    expect(accounts).toEqual(randomResult.data);
+  })
+
+  it(`server.accounts().accountId('fooAccountId) ${serverUrl}`, async () => {
+    prepareAxios(serverUrl, '/accounts/fooAccountId', randomResult);
+    expect.assertions(1);
+    const accountId = await server.accounts().accountId('fooAccountId').call();
+    expect(accountId).toEqual(randomResult.data);
+  })
+
+  it(`server.transactions() ${serverUrl}`, async () => {
+    prepareAxios(serverUrl, '/transactions', randomResult);
+    expect.assertions(1);
+    const transactions = await server.transactions().call();
+    expect(transactions).toEqual(randomResult.data);
+  })
+
+  it(`server.transaction().includeFailed(true) ${serverUrl}`, async() => {
+    prepareAxios(serverUrl, '/transactions?include_failed=true', randomResult);
+    expect.assertions(1);
+    const transactions = await server.transactions().includeFailed(true).call();
+    expect(transactions).toEqual(randomResult.data);
+  })
+
+  it(`server.operations().includeFailed(true) ${serverUrl}`, async() => {
+    prepareAxios(serverUrl, '/operations?include_failed=true', randomResult);
+    expect.assertions(1);
+    const operations = await server.operations().includeFailed(true).call();
+    expect(operations).toEqual(randomResult.data);
+  })
+
+  it(`server.transactions().transaction('fooTransactionId')  ${serverUrl}`, async() => {
+    prepareAxios(serverUrl, '/transactions/fooTransactionId', randomResult);
+    expect.assertions(1);
+    const transaction = await server.transactions().transaction('fooTransactionId').call();
+    expect(transaction).toEqual(randomResult.data);
+  })
+
+  it(`server.transactions().forAccount('fooAccountId) ${serverUrl}`, async() => {
+    prepareAxios(serverUrl, '/accounts/fooAccountId/transactions', randomResult);
+    expect.assertions(1);
+    const transactions = await server.transactions().forAccount('fooAccountId').call();
+    expect(transactions).toEqual(randomResult.data);
+  })
+
+  it(`server.submitTransaction() ${serverUrl}`, async() => {
+    randomResult.data.endpoint = 'post';
+    const keypair = StellarSdk.Keypair.random();
+    const account = new StellarSdk.Account(keypair.publicKey(), '56199647068161');
+    const fakeTransaction = new StellarSdk.TransactionBuilder(account, { fee: 100 })
+      .addOperation(StellarSdk.Operation.payment({
+        destination: keypair.publicKey(),
+        asset: StellarSdk.Asset.native(),
+        amount: '100.50'
+      }))
+      .setTimeout(StellarSdk.TimeoutInfinite)
+      .build();
+    fakeTransaction.sign(keypair);
+    const tx = encodeURIComponent(fakeTransaction.toEnvelope().toXDR().toString('base64'));
+    when(axiosMock.get).calledWith(`${serverUrl}/transactions?tx=${tx}`).mockResolvedValue(randomResult);
+    
+    expect.assertions(1);
+    const response = await server.submitTransaction(fakeTransaction);
+    expect(response).toEqual(randomResult.data);
+  })
+}
+
+describe('horizon path tests', () => {
+  beforeEach(() => {
     StellarSdk.Config.setDefault();
     StellarSdk.Network.useTestNetwork();
   });
 
-  afterEach(function() {
-    this.axiosMock.verify();
-    this.axiosMock.restore();
+  ;[
+  //server url without folder path.
+  'https://acme.com:1337',
+  //server url folder path.
+  'https://acme.com:1337/folder',
+  //server url folder and subfolder path.
+  'https://acme.com:1337/folder/subfolder'
+  ].forEach(serverUrl => {
+    testHorizonPaths(serverUrl);
   });
 
-  function test_horizon_paths(serverUrl) {
-    let server = new StellarSdk.Server(serverUrl);
-
-    let randomResult = {
-      data: {
-        url: serverUrl,
-        random: Math.round(1000 * Math.random()),
-        endpoint: 'bogus'
-      }
-    };
-
-    function prepareAxios(axiosMock, endpoint) {
-      randomResult.endpoint = endpoint;
-      axiosMock
-        .expects('get')
-        .withArgs(sinon.match(serverUrl + endpoint))
-        .returns(Promise.resolve(randomResult));
-    }
-
-    it('server.accounts() ' + serverUrl, function(done) {
-      prepareAxios(this.axiosMock, '/accounts');
-      server
-        .accounts()
-        .call()
-        .should.eventually.deep.equal(randomResult.data)
-        .notify(done);
-    });
-
-    it("server.accounts().accountId('fooAccountId') " + serverUrl, function(
-      done
-    ) {
-      prepareAxios(this.axiosMock, '/accounts/fooAccountId');
-      server
-        .accounts()
-        .accountId('fooAccountId')
-        .call()
-        .should.eventually.deep.equal(randomResult.data)
-        .notify(done);
-    });
-
-    it('server.transactions() ' + serverUrl, function(done) {
-      prepareAxios(this.axiosMock, '/transactions');
-      server
-        .transactions()
-        .call()
-        .should.eventually.deep.equal(randomResult.data)
-        .notify(done);
-    });
-
-    it('server.transactions().includeFailed(true) ' + serverUrl, function(
-      done
-    ) {
-      prepareAxios(this.axiosMock, '/transactions?include_failed=true');
-      server
-        .transactions()
-        .includeFailed(true)
-        .call()
-        .should.eventually.deep.equal(randomResult.data)
-        .notify(done);
-    });
-
-    it('server.operations().includeFailed(true) ' + serverUrl, function(done) {
-      prepareAxios(this.axiosMock, '/operations?include_failed=true');
-      server
-        .operations()
-        .includeFailed(true)
-        .call()
-        .should.eventually.deep.equal(randomResult.data)
-        .notify(done);
-    });
-
-    it(
-      "server.transactions().transaction('fooTransactionId') " + serverUrl,
-      function(done) {
-        prepareAxios(this.axiosMock, '/transactions/fooTransactionId');
-        server
-          .transactions()
-          .transaction('fooTransactionId')
-          .call()
-          .should.eventually.deep.equal(randomResult.data)
-          .notify(done);
-      }
-    );
-
-    it(
-      "server.transactions().forAccount('fooAccountId') " + serverUrl,
-      function(done) {
-        prepareAxios(this.axiosMock, '/accounts/fooAccountId/transactions');
-        server
-          .transactions()
-          .forAccount('fooAccountId')
-          .call()
-          .should.eventually.deep.equal(randomResult.data)
-          .notify(done);
-      }
-    );
-
-    it('server.submitTransaction() ' + serverUrl, function(done) {
-      randomResult.endpoint = 'post';
-
-      let keypair = StellarSdk.Keypair.random();
-      let account = new StellarSdk.Account(
-        keypair.publicKey(),
-        '56199647068161'
-      );
-
-      let fakeTransaction = new StellarSdk.TransactionBuilder(account, {
-        fee: 100
-      })
-        .addOperation(
-          StellarSdk.Operation.payment({
-            destination: keypair.publicKey(),
-            asset: StellarSdk.Asset.native(),
-            amount: '100.50'
-          })
-        )
-        .setTimeout(StellarSdk.TimeoutInfinite)
-        .build();
-      fakeTransaction.sign(keypair);
-      let tx = encodeURIComponent(
-        fakeTransaction
-          .toEnvelope()
-          .toXDR()
-          .toString('base64')
-      );
-
-      this.axiosMock
-        .expects('post')
-        .withArgs(sinon.match(serverUrl + '/transactions', `tx=${tx}`))
-        .returns(Promise.resolve(randomResult));
-
-      server
-        .submitTransaction(fakeTransaction)
-        .should.eventually.deep.equal(randomResult.data)
-        .notify(done);
-    });
-  }
-
-  let serverUrls = [];
-
-  //server url without folder path.
-  serverUrls.push('https://acme.com:1337');
-
-  //server url folder path.
-  serverUrls.push('https://acme.com:1337/folder');
-
-  //server url folder and subfolder path.
-  serverUrls.push('https://acme.com:1337/folder/subfolder');
-
-  for (var index = 0; index < serverUrls.length; index++) {
-    var serverUrl = serverUrls[index];
-    test_horizon_paths(serverUrl);
-  }
 });

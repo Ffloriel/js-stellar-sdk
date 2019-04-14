@@ -12,7 +12,7 @@ import { PaymentCallBuilder } from './payment_call_builder';
 import { EffectCallBuilder } from './effect_call_builder';
 import { AssetsCallBuilder } from './assets_call_builder';
 import { TradeAggregationCallBuilder } from './trade_aggregation_call_builder';
-import { ServerOptions, Timebounds, FeeStats } from '@/types/';
+import { ServerOptions, Timebounds, FeeStats } from './types/';
 export declare const SUBMIT_TRANSACTION_TIMEOUT: number;
 export declare class Server {
     serverURL: uri.URI;
