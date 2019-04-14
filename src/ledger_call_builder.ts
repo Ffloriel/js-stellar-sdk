@@ -6,7 +6,7 @@ export class LedgerCallBuilder extends CallBuilder {
     this.url.segment('ledgers');
   }
 
-  ledger(sequence: number | string): LedgerCallBuilder {
+  public ledger(sequence: number | string): LedgerCallBuilder {
     this.filter.push(['ledgers', sequence.toString()]);
     return this;
   }

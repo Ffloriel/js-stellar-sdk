@@ -6,17 +6,17 @@ export class TransactionCallBuilder extends CallBuilder {
     this.url.segment('transactions');
   }
 
-  transaction(transactionId: string): TransactionCallBuilder {
+  public transaction(transactionId: string): TransactionCallBuilder {
     this.filter.push(['transactions', transactionId]);
     return this;
   }
 
-  forAccount(accountId: string): TransactionCallBuilder {
+  public forAccount(accountId: string): TransactionCallBuilder {
     this.filter.push(['accounts', accountId, 'transactions']);
     return this;
   }
 
-  forLedger(sequence: number | string): TransactionCallBuilder {
+  public forLedger(sequence: number | string): TransactionCallBuilder {
     const ledgerSequence =
       typeof sequence === 'number' ? sequence.toString() : sequence;
 
@@ -24,7 +24,7 @@ export class TransactionCallBuilder extends CallBuilder {
     return this;
   }
 
-  includeFailed(value: boolean): TransactionCallBuilder {
+  public includeFailed(value: boolean): TransactionCallBuilder {
     this.url.setQuery('include_failed', value.toString());
     return this;
   }

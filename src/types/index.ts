@@ -36,11 +36,9 @@ export type FederationServerResponse = {
   memo?: string;
 }
 
-export type ServerTimeMap = {
-  [index: string]: {
-    serverTime: number;
-    localTimeRecorded: number;
-  }
+export type ServerTime = {
+  serverTime: number;
+  localTimeRecorded: number;
 }
 
 export interface ApiJsonResponse {

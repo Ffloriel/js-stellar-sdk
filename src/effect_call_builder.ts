@@ -6,12 +6,12 @@ export class EffectCallBuilder extends CallBuilder {
     this.url.segment('effects');
   }
 
-  forAccount(accountId: string): EffectCallBuilder {
+  public forAccount(accountId: string): EffectCallBuilder {
     this.filter.push(['accounts', accountId, 'effects']);
     return this;
   }
 
-  forLedger(sequence: number | string): EffectCallBuilder {
+  public forLedger(sequence: number | string): EffectCallBuilder {
     this.filter.push([
       'ledgers',
       typeof sequence === 'number' ? sequence.toString() : sequence,
@@ -20,12 +20,12 @@ export class EffectCallBuilder extends CallBuilder {
     return this;
   }
 
-  forTransaction(transactionId: string): EffectCallBuilder {
+  public forTransaction(transactionId: string): EffectCallBuilder {
     this.filter.push(['transactions', transactionId, 'effects']);
     return this;
   }
 
-  forOperation(operationId: string): EffectCallBuilder {
+  public forOperation(operationId: string): EffectCallBuilder {
     this.filter.push(['operations', operationId, 'effects']);
     return this;
   }

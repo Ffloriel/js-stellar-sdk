@@ -7,7 +7,7 @@ export class NetworkError extends Error {
     this.response = response;
   }
 
-  getResponse() {
+  public getResponse() {
     return this.response;
   }
 }

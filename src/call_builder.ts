@@ -47,17 +47,14 @@ export class CallBuilder {
     }
   }
 
-  /**
-   * Triggers a HTTP request using this builder's current configuration.
-   * @returns {Promise} a Promise that resolves to the server's response.
-   */
-  async call() {
+
+  public async call(): Promise<any> {
     this.checkFilter();
     const r = await this._sendNormalRequest(this.url);
     return this._parseResponse(r);
   }
 
-  stream(options: EventSourceOptions = {}) {
+  public stream(options: EventSourceOptions = {}) {
     this.checkFilter();
 
     this.url.setQuery('X-Client-Name', 'js-stellar-sdk');

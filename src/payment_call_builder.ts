@@ -7,12 +7,12 @@ export class PaymentCallBuilder extends CallBuilder {
     this.url.segment('payments');
   }
 
-  forAccount(accountId: string): PaymentCallBuilder {
+  public forAccount(accountId: string): PaymentCallBuilder {
     this.filter.push(['accounts', accountId, 'payments']);
     return this;
   }
 
-  forLedger(sequence: number | string): PaymentCallBuilder {
+  public forLedger(sequence: number | string): PaymentCallBuilder {
     this.filter.push([
       'ledgers',
       typeof sequence === 'number' ? sequence.toString() : sequence,
@@ -21,7 +21,7 @@ export class PaymentCallBuilder extends CallBuilder {
     return this;
   }
 
-  forTransaction(transactionId: string): PaymentCallBuilder {
+  public forTransaction(transactionId: string): PaymentCallBuilder {
     this.filter.push(['transactions', transactionId, 'payments']);
     return this;
   }

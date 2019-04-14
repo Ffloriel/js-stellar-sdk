@@ -37,7 +37,7 @@ export class FederationServer {
     }
   }
 
-  static async resolve(value: string, opts: FederationServerOptions = {}) {
+  public static async resolve(value: string, opts: FederationServerOptions = {}) {
     // Check if `value` is in account ID format
     if (value.indexOf('*') < 0) {
       if (!StrKey.isValidEd25519PublicKey(value)) {
@@ -56,7 +56,7 @@ export class FederationServer {
     return federationServer.resolveAddress(value);
   }
 
-  static async createForDomain(domain: string, opts: FederationServerOptions = {}): Promise<FederationServer> {
+  public static async createForDomain(domain: string, opts: FederationServerOptions = {}): Promise<FederationServer> {
     const tomlObject = await StellarTomlResolver.resolve(domain, opts);
     if (!tomlObject.FEDERATION_SERVER) {
       return Promise.reject(new Error('stellar.toml does not contain FEDERATION_SERVER field'));
@@ -64,7 +64,7 @@ export class FederationServer {
     return new FederationServer(tomlObject.FEDERATION_SERVER, domain, opts);
   }
 
-  resolveAddress(address: string): Promise<any> {
+  public resolveAddress(address: string): Promise<any> {
     let stellarAddress = address;
     if (address.indexOf('*') < 0) {
       if (!this.domain) {
@@ -80,12 +80,12 @@ export class FederationServer {
     return this._sendRequest(url);
   }
 
-  resolveAccountId(accountId: string): Promise<any> {
+  public resolveAccountId(accountId: string): Promise<any> {
     const url = this.serverURL.query({ type: 'id', q: accountId });
     return this._sendRequest(url);
   }
 
-  resolveTransactionId(transactionId: string): Promise<any> {
+  public resolveTransactionId(transactionId: string): Promise<any> {
     const url = this.serverURL.query({ type: 'txid', q: transactionId });
     return this._sendRequest(url);
   }

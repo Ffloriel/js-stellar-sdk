@@ -7,7 +7,7 @@ export class TradesCallBuilder extends CallBuilder {
     this.url.segment('trades');
   }
 
-  forAssetPair(base: Asset, counter: Asset): TradesCallBuilder {
+  public forAssetPair(base: Asset, counter: Asset): TradesCallBuilder {
     if (!base.isNative()) {
       this.url.setQuery('base_asset_type', base.getAssetType());
       this.url.setQuery('base_asset_code', base.getCode());
@@ -25,12 +25,12 @@ export class TradesCallBuilder extends CallBuilder {
     return this;
   }
 
-  forOffer(offerId: string): TradesCallBuilder {
+  public forOffer(offerId: string): TradesCallBuilder {
     this.url.setQuery('offer_id', offerId);
     return this;
   }
 
-  forAccount(accountId: string): TradesCallBuilder {
+  public forAccount(accountId: string): TradesCallBuilder {
     this.filter.push(['accounts', accountId, 'trades']);
     return this;
   }

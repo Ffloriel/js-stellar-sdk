@@ -6,7 +6,7 @@ export class AccountCallBuilder extends CallBuilder {
     this.url.segment('accounts');
   }
 
-  accountId(id: string): AccountCallBuilder {
+  public accountId(id: string): AccountCallBuilder {
     this.filter.push(['accounts', id]);
     return this;
   }

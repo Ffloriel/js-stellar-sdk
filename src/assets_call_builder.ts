@@ -6,12 +6,12 @@ export class AssetsCallBuilder extends CallBuilder {
     this.url.segment('assets');
   }
 
-  forCode(value: string): AssetsCallBuilder {
+  public forCode(value: string): AssetsCallBuilder {
     this.url.setQuery('asset_code', value);
     return this;
   }
 
-  forIssuer(value: string): AssetsCallBuilder {
+  public forIssuer(value: string): AssetsCallBuilder {
     this.url.setQuery('asset_issuer', value);
     return this;
   }
