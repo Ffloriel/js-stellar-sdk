@@ -1,8 +1,9 @@
 import { CallBuilder } from './call_builder';
 import { Asset } from 'stellar-base';
-export declare class TradesCallBuilder extends CallBuilder {
+import { ServerCollectionPage, ServerTradeRecord } from './types';
+export declare class TradesCallBuilder extends CallBuilder<ServerCollectionPage<ServerTradeRecord>> {
     constructor(serverUrl: uri.URI);
-    forAssetPair(base: Asset, counter: Asset): TradesCallBuilder;
-    forOffer(offerId: string): TradesCallBuilder;
-    forAccount(accountId: string): TradesCallBuilder;
+    forAssetPair(base: Asset, counter: Asset): this;
+    forOffer(offerId: string): this;
+    forAccount(accountId: string): this;
 }

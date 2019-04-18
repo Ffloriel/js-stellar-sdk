@@ -1,7 +1,8 @@
 import { CallBuilder } from './call_builder';
-export declare class PaymentCallBuilder extends CallBuilder {
+import { ServerPaymentOperationRecord } from './types';
+export declare class PaymentCallBuilder extends CallBuilder<ServerPaymentOperationRecord> {
     constructor(serverUrl: uri.URI);
-    forAccount(accountId: string): PaymentCallBuilder;
-    forLedger(sequence: number | string): PaymentCallBuilder;
-    forTransaction(transactionId: string): PaymentCallBuilder;
+    forAccount(accountId: string): this;
+    forLedger(sequence: number | string): this;
+    forTransaction(transactionId: string): this;
 }

@@ -21,8 +21,7 @@ import { PaymentCallBuilder } from './payment_call_builder';
 import { EffectCallBuilder } from './effect_call_builder';
 import { AssetsCallBuilder } from './assets_call_builder';
 import { TradeAggregationCallBuilder } from './trade_aggregation_call_builder';
-
-import { ServerOptions, Timebounds, FeeStats } from './types/'
+import { ServerOptions, ServerTransactionRecord, Timebounds, HorizonFeeStatsResponse } from './types';
 
 export const SUBMIT_TRANSACTION_TIMEOUT = 60 * 1000;
 
@@ -50,23 +49,23 @@ export class Server {
     }
   }
 
-  async fetchTimebounds(seconds: number, _isRetry: boolean = false): Promise<Timebounds> {
+  public async fetchTimebounds(seconds: number, _isRetry: boolean = false): Promise<Timebounds> {
     // HorizonAxiosClient instead of this.ledgers so we can get at them headers
     const currentTime = getCurrentServerTime(this.serverURL.hostname());
 
     if (currentTime) {
-      return Promise.resolve({
+      return {
         minTime: 0,
         maxTime: currentTime + seconds
-      });
+      };
     }
 
     // if this is a retry, then the retry has failed, so use local time
     if (_isRetry) {
-      return Promise.resolve({
+      return {
         minTime: 0,
         maxTime: Math.floor(new Date().getTime() / 1000) + seconds
-      });
+      };
     }
 
     // otherwise, retry (by calling the root endpoint)
@@ -75,24 +74,24 @@ export class Server {
     return await this.fetchTimebounds(seconds, true);
   }
 
-  async fetchBaseFee(): Promise<number> {
+  public async fetchBaseFee(): Promise<number> {
     const response = await this.ledgers()
       .order('desc')
       .limit(1)
       .call();
-    if (response && response.records[0]) {
+    if (response && response.records && response.records[0]) {
       return response.records[0].base_fee_in_stroops || 100;
     }
     return 100;
   }
 
-  operationFeeStats(): Promise<FeeStats> {
+  operationFeeStats(): Promise<any> {
     const cb = new CallBuilder(this.serverURL);
     cb.filter.push(['operation_fee_stats']);
     return cb.call();
   }
 
-  async submitTransaction(transaction: Transaction): Promise<any> {
+  async submitTransaction(transaction: Transaction): Promise<ServerTransactionRecord> {
     const tx = encodeURIComponent(
       transaction
         .toEnvelope()

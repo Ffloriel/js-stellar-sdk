@@ -1,8 +1,9 @@
 import { CallBuilder } from './call_builder';
-export declare class EffectCallBuilder extends CallBuilder {
+import { ServerCollectionPage, ServerEffectRecord } from './types';
+export declare class EffectCallBuilder extends CallBuilder<ServerCollectionPage<ServerEffectRecord>> {
     constructor(serverUrl: uri.URI);
-    forAccount(accountId: string): EffectCallBuilder;
-    forLedger(sequence: number | string): EffectCallBuilder;
-    forTransaction(transactionId: string): EffectCallBuilder;
-    forOperation(operationId: string): EffectCallBuilder;
+    forAccount(accountId: string): this;
+    forLedger(sequence: number | string): this;
+    forTransaction(transactionId: string): this;
+    forOperation(operationId: string): this;
 }

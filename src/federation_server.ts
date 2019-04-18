@@ -5,7 +5,7 @@ import { StrKey } from 'stellar-base';
 import { Config } from './config';
 import { BadResponseError } from './errors';
 import { StellarTomlResolver } from './stellar_toml_resolver';
-import { FederationServerOptions } from './types';
+import { FederationServerOptions, FederationServerRecord } from './types';
 
 // FEDERATION_RESPONSE_MAX_SIZE is the maximum size of response from a federation server
 export const FEDERATION_RESPONSE_MAX_SIZE = 100 * 1024;
@@ -37,7 +37,7 @@ export class FederationServer {
     }
   }
 
-  public static async resolve(value: string, opts: FederationServerOptions = {}) {
+  public static async resolve(value: string, opts: FederationServerOptions = {}): Promise<FederationServerRecord> {
     // Check if `value` is in account ID format
     if (value.indexOf('*') < 0) {
       if (!StrKey.isValidEd25519PublicKey(value)) {
@@ -64,7 +64,7 @@ export class FederationServer {
     return new FederationServer(tomlObject.FEDERATION_SERVER, domain, opts);
   }
 
-  public resolveAddress(address: string): Promise<any> {
+  public resolveAddress(address: string): Promise<FederationServerRecord> {
     let stellarAddress = address;
     if (address.indexOf('*') < 0) {
       if (!this.domain) {
@@ -80,12 +80,12 @@ export class FederationServer {
     return this._sendRequest(url);
   }
 
-  public resolveAccountId(accountId: string): Promise<any> {
+  public resolveAccountId(accountId: string): Promise<FederationServerRecord> {
     const url = this.serverURL.query({ type: 'id', q: accountId });
     return this._sendRequest(url);
   }
 
-  public resolveTransactionId(transactionId: string): Promise<any> {
+  public resolveTransactionId(transactionId: string): Promise<FederationServerRecord> {
     const url = this.serverURL.query({ type: 'txid', q: transactionId });
     return this._sendRequest(url);
   }

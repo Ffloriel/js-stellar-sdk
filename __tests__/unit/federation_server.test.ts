@@ -169,22 +169,20 @@ describe('federation-server.js tests', () => {
     });
   });
 
-//   describe('FederationServer.resolve', () => {
-//     it('succeeds for a valid account ID', function(done) {
-//       StellarSdk.FederationServer.resolve(
-//         'GAFSZ3VPBC2H2DVKCEWLN3PQWZW6BVDMFROWJUDAJ3KWSOKQIJ4R5W4J'
-//       )
-//         .should.eventually.deep.equal({
-//           account_id: 'GAFSZ3VPBC2H2DVKCEWLN3PQWZW6BVDMFROWJUDAJ3KWSOKQIJ4R5W4J'
-//         })
-//         .notify(done);
-//     });
+  describe('FederationServer.resolve', () => {
+    it('succeeds for a valid account ID', async () => {
+      expect.assertions(1);
+      const record = await StellarSdk.FederationServer.resolve('GAFSZ3VPBC2H2DVKCEWLN3PQWZW6BVDMFROWJUDAJ3KWSOKQIJ4R5W4J');
+      expect(record.account_id).toBe('GAFSZ3VPBC2H2DVKCEWLN3PQWZW6BVDMFROWJUDAJ3KWSOKQIJ4R5W4J');
+    });
 
-//     it('fails for invalid account ID', function(done) {
-//       StellarSdk.FederationServer.resolve('invalid')
-//         .should.be.rejectedWith(/Invalid Account ID/)
-//         .notify(done);
-//     });
+    it('fails for invalid account ID', async () => {
+      expect.assertions(1);
+      return StellarSdk.FederationServer.resolve('invalid')
+        .catch(e => {
+          expect(e.message).toMatch(/Invalid Account ID/);
+        });
+    });
 
 //     it('succeeds for a valid Stellar address', function(done) {
 //       this.axiosMock
@@ -262,34 +260,29 @@ describe('federation-server.js tests', () => {
 //         .notify(done);
 //     });
 
-//     it('fails when response exceeds the limit', function(done) {
-//       // Unable to create temp server in a browser
-//       if (typeof window != 'undefined') {
-//         return done();
-//       }
-//       var response = Array(StellarSdk.FEDERATION_RESPONSE_MAX_SIZE + 10).join(
-//         'a'
-//       );
-//       let tempServer = http
-//         .createServer((req, res) => {
-//           res.setHeader('Content-Type', 'application/json; charset=UTF-8');
-//           res.end(response);
-//         })
-//         .listen(4444, () => {
-//           new StellarSdk.FederationServer(
-//             'http://localhost:4444/federation',
-//             'stellar.org',
-//             { allowHttp: true }
-//           )
-//             .resolveAddress('bob*stellar.org')
-//             .should.be.rejectedWith(
-//               /federation response exceeds allowed size of [0-9]+/
-//             )
-//             .notify(done)
-//             .then(() => tempServer.close());
-//         });
-//     });
-//   });
+    it('fails when response exceeds the limit', async() => {
+      const response = 'a'.repeat(StellarSdk.FEDERATION_RESPONSE_MAX_SIZE + 10);
+      expect.assertions(1);
+      const tempServer = http
+        .createServer((req, res) => {
+          res.setHeader('Content-Type', 'application/json; charset=UTF-8');
+          res.end(response);
+        })
+        .listen(4444, () => {
+          return new StellarSdk.FederationServer(
+            'http://localhost:4444/federation',
+            'stellar.org',
+            { allowHttp: true })
+            .resolveAddress('bob*stellar.org')
+            .catch(e => {
+              expect(e.message).toMatch(/federation response exceeds allowed size of [0-9]+/)
+            })
+            .finally(() => {
+              tempServer.close();
+            })
+        });
+    });
+  });
 
 //   describe('FederationServer times out when response lags and timeout set', () => {
 //     afterEach(() => {

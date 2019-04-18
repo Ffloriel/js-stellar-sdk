@@ -1,8 +1,9 @@
 import { CallBuilder } from './call_builder';
-export declare class TransactionCallBuilder extends CallBuilder {
+import { ServerTransactionRecord } from './types';
+export declare class TransactionCallBuilder extends CallBuilder<ServerTransactionRecord> {
     constructor(serverUrl: uri.URI);
-    transaction(transactionId: string): TransactionCallBuilder;
-    forAccount(accountId: string): TransactionCallBuilder;
-    forLedger(sequence: number | string): TransactionCallBuilder;
-    includeFailed(value: boolean): TransactionCallBuilder;
+    transaction(transactionId: string): this;
+    forAccount(accountId: string): this;
+    forLedger(sequence: number | string): this;
+    includeFailed(value: boolean): this;
 }

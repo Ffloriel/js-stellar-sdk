@@ -1,5 +1,6 @@
 import { CallBuilder } from './call_builder';
-export declare class LedgerCallBuilder extends CallBuilder {
+import { ServerLedgerRecord } from './types';
+export declare class LedgerCallBuilder extends CallBuilder<ServerLedgerRecord> {
     constructor(serverUrl: uri.URI);
-    ledger(sequence: number | string): LedgerCallBuilder;
+    ledger(sequence: number | string): this;
 }

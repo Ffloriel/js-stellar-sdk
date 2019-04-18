@@ -1,6 +1,7 @@
 import { CallBuilder } from './call_builder';
+import { ServerAssetRecord, ServerCollectionPage } from './types';
 
-export class AssetsCallBuilder extends CallBuilder {
+export class AssetsCallBuilder extends CallBuilder<ServerCollectionPage<ServerAssetRecord>> {
   constructor(serverUrl: uri.URI) {
     super(serverUrl);
     this.url.segment('assets');

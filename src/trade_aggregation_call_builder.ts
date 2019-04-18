@@ -1,6 +1,7 @@
 import { CallBuilder } from './call_builder';
 import { BadRequestError } from './errors';
 import { Asset } from 'stellar-base';
+import { ServerCollectionPage, ServerTradeAggregationRecord } from './types';
 
 const allowedResolutions = [
   60000,
@@ -11,7 +12,7 @@ const allowedResolutions = [
   604800000
 ];
 
-export class TradeAggregationCallBuilder extends CallBuilder {
+export class TradeAggregationCallBuilder extends CallBuilder<ServerCollectionPage<ServerTradeAggregationRecord>> {
   constructor(
     serverUrl: uri.URI,
     base: Asset,

@@ -1,13 +1,14 @@
 import axios, { AxiosResponse } from 'axios';
 import { when } from 'jest-when';
-import StellarSdk from './../../src/index'
+import StellarSdk, { HorizonAxiosClient } from './../../src/index'
 
-const axiosMock = axios as jest.Mocked<typeof axios>;
-axiosMock.get = jest.fn();
+const horizonAxiosClientMock = HorizonAxiosClient as jest.Mocked<typeof HorizonAxiosClient>;
+horizonAxiosClientMock.get = jest.fn();
+horizonAxiosClientMock.post = jest.fn();
 
 const prepareAxios = (serverUrl: string, endpoint: string, randomResult: AxiosResponse) => {
   randomResult.data.endpoint = endpoint;
-  when(axiosMock.get).calledWith(`${serverUrl}${endpoint}`).mockResolvedValue(randomResult);
+  when(horizonAxiosClientMock.get).calledWith(expect.stringMatching(`${serverUrl}${endpoint}`)).mockResolvedValue(randomResult);
 }
 
 const testHorizonPaths = (serverUrl: string) => {
@@ -87,7 +88,8 @@ const testHorizonPaths = (serverUrl: string) => {
       .build();
     fakeTransaction.sign(keypair);
     const tx = encodeURIComponent(fakeTransaction.toEnvelope().toXDR().toString('base64'));
-    when(axiosMock.get).calledWith(`${serverUrl}/transactions?tx=${tx}`).mockResolvedValue(randomResult);
+    // when(horizonAxiosClientMock.get).calledWith(`${serverUrl}/transactions?tx=${tx}`).mockResolvedValue(randomResult);
+    horizonAxiosClientMock.post.mockResolvedValue(randomResult);
     
     expect.assertions(1);
     const response = await server.submitTransaction(fakeTransaction);

@@ -11,7 +11,7 @@ export const STELLAR_TOML_MAX_SIZE = 100 * 1024;
  */
 export class StellarTomlResolver {
 
-  static async resolve(domain: string, opts: StellarTomlResolverOptions = {}): Promise<any> {
+  static async resolve(domain: string, opts: StellarTomlResolverOptions = {}): Promise<{ [key: string]: any }> {
     const allowHttp = typeof opts.allowHttp === 'undefined'
       ? Config.isAllowHttp()
       : opts.allowHttp;

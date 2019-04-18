@@ -1,7 +1,8 @@
 import { CallBuilder } from './call_builder';
 import { Asset } from './types/stellarBase';
+import { ServerOrderbookRecord } from './types';
 
-export class OrderbookCallBuilder extends CallBuilder {
+export class OrderbookCallBuilder extends CallBuilder<ServerOrderbookRecord> {
   constructor(serverUrl: uri.URI, selling: Asset, buying: Asset) {
     super(serverUrl);
     this.url.segment('order_book');

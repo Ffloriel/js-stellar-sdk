@@ -5,7 +5,7 @@ import { isNode } from './utils'
 import HorizonAxiosClient from './horizon_axios_client';
 import { version } from './../package.json';
 import { NotFoundError, NetworkError, BadRequestError } from './errors';
-import { Link, FeeStats } from './types/index.js';
+import { HorizonBaseResponse, ServerCollectionPage, HorizonResponseLink } from './types/index.js';
 import { EventSourceOptions } from './types/eventSource.js';
 
 interface Constructable<T> {
@@ -23,7 +23,7 @@ if (isNode) {
   EventSource = window.EventSource;
 }
 
-export class CallBuilder {
+export class CallBuilder<T extends HorizonBaseResponse | ServerCollectionPage> {
 
   url: uri.URI
   filter: string[][];
@@ -47,8 +47,7 @@ export class CallBuilder {
     }
   }
 
-
-  public async call(): Promise<any> {
+  public async call(): Promise<T> {
     this.checkFilter();
     const r = await this._sendNormalRequest(this.url);
     return this._parseResponse(r);
@@ -116,7 +115,7 @@ export class CallBuilder {
     };
   }
 
-  private _requestFnForLink(link: Link): Function {
+  private _requestFnForLink(link: HorizonResponseLink): Function {
     return async (opts: any) => {
       let uri;
 
@@ -132,7 +131,7 @@ export class CallBuilder {
     };
   }
 
-  private _parseRecord(json: FeeStats): any {
+  private _parseRecord(json: any): any {
     if (!json._links) {
       return json;
     }
@@ -142,12 +141,12 @@ export class CallBuilder {
         json[`${key}_attr`] = json[key];
       }
 
-      json[key] = this._requestFnForLink(n);
+      json[key] = this._requestFnForLink(n as HorizonResponseLink);
     }
     return json;
   }
 
-  private _sendNormalRequest(initialUrl: uri.URI) {
+  private async _sendNormalRequest(initialUrl: uri.URI) {
     let url = initialUrl;
 
     if (url.authority() === '') {
@@ -160,9 +159,12 @@ export class CallBuilder {
 
     // Temp fix for: https://github.com/stellar/js-stellar-sdk/issues/15
     url.setQuery('c', Math.random().toString());
-    return HorizonAxiosClient.get(url.toString())
-      .then((response) => response.data)
-      .catch(this._handleNetworkError);
+    try {
+      const response = await HorizonAxiosClient.get(url.toString());
+      return response.data;
+    } catch(e) {
+      return Promise.reject(this._handleNetworkError(e));
+    };
   }
 
   private _parseResponse(json: any) {
@@ -174,19 +176,18 @@ export class CallBuilder {
 
   private _toCollectionPage(json: any) {
     for (let i = 0; i < json._embedded.records.length; i += 1) {
-      // eslint-disable-next-line no-param-reassign
       json._embedded.records[i] = this._parseRecord(json._embedded.records[i]);
     }
     return {
       records: json._embedded.records,
-      next: () =>
-        this._sendNormalRequest(URI(json._links.next.href)).then((r) =>
-          this._toCollectionPage(r)
-        ),
-      prev: () =>
-        this._sendNormalRequest(URI(json._links.prev.href)).then((r) =>
-          this._toCollectionPage(r)
-        )
+      next: async () => {
+        const r = await this._sendNormalRequest(URI(json._links.next.href));
+        return this._toCollectionPage(r);
+      },
+      prev: async () => {
+        const r = await this._sendNormalRequest(URI(json._links.prev.href));
+        return this._toCollectionPage(r);
+      }
     };
   }
 
@@ -207,17 +208,17 @@ export class CallBuilder {
     }
   }
 
-  public cursor(cursor: string): CallBuilder {
+  public cursor(cursor: string): this {
     this.url.setQuery('cursor', cursor);
     return this;
   }
 
-  public limit(recordsNumber: number): CallBuilder {
+  public limit(recordsNumber: number): this {
     this.url.setQuery('limit', recordsNumber.toString());
     return this;
   }
 
-  public order(direction: 'asc' | 'desc'): CallBuilder {
+  public order(direction: 'asc' | 'desc'): this {
     this.url.setQuery('order', direction);
     return this;
   }
