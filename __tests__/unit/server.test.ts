@@ -1,4 +1,4 @@
-import StellarSdk, { HorizonAxiosClient, StellarTomlResolver } from '../../src/index'
+import StellarSdk, { HorizonAxiosClient } from '../../src/index'
 import { Server } from './/../../src/server';
 import { HorizonAccountResponse } from '../../src/types';
 
@@ -286,7 +286,7 @@ describe('server.js non-transaction tests', () => {
       // Response data
       expect(response.account_id).toBe('GBAH7FQMC3CZJ4WD6GE7G7YXCIU36LC2IHXQ7D5MQAUO4PODOWIVLSFS');
       expect(response.subentry_count).toBe(5);
-      // expect(typeof response.transactions).toBe('function');
+      expect(typeof response.transactions).toBe('function');
       expect(typeof response.operations).toBe('function');
       expect(typeof response.payments).toBe('function');
       expect(typeof response.effects).toBe('function');
@@ -487,6 +487,7 @@ describe('server.js non-transaction tests', () => {
   //           });
   //       });
   //     });
+
   //     describe('without options', function() {
   //       it('requests the correct endpoint', function(done) {
   //         this.axiosMock
@@ -666,6 +667,7 @@ describe('server.js non-transaction tests', () => {
   //           });
   //       });
   //     });
+  
   //     describe('with options', function() {
   //       it('requests the correct endpoint', function(done) {
   //         this.axiosMock

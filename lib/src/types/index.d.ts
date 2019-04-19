@@ -461,8 +461,36 @@ export interface ServerTradeAggregationRecord extends HorizonBaseResponse {
     open: string;
     close: string;
 }
+export interface CurrentOffer {
+    offerId: string;
+    selling: {
+        type: AssetType;
+        assetCode: string;
+        issuer?: string;
+    };
+    buying: {
+        type: AssetType;
+        assetCode: string;
+        issuer?: string;
+    };
+    amount: string;
+    price: HorizonPriceRShorthand;
+}
+export interface OfferResult {
+    offersClaimed: any[];
+    effect: string;
+    operationIndex: number;
+    currentOffer?: CurrentOffer;
+    amountBought: string;
+    amountSold: string;
+    wasPartiallyFilled: boolean;
+    wasImmediatelyFilled: boolean;
+    wasImmediatelyDeleted: boolean;
+    isFullyOpen?: boolean;
+}
 export interface ServerTransactionRecord extends Omit<HorizonTransactionResponse, 'ledger'> {
     ledger_attr: HorizonTransactionResponse['ledger'];
+    offerResults?: OfferResult[];
     account: ServerCallFunction<ServerAccountRecord>;
     effects: ServerCallCollectionFunction<ServerEffectRecord>;
     ledger: ServerCallFunction<ServerLedgerRecord>;
@@ -474,6 +502,10 @@ export interface ServerTransactionRecord extends Omit<HorizonTransactionResponse
 export interface ServerOptions {
     allowHttp?: boolean;
 }
+export declare type ServerTime = {
+    serverTime: number;
+    localTimeRecorded: number;
+};
 export interface StellarTomlResolverOptions {
     allowHttp?: boolean;
     timeout?: number;

@@ -1,5 +1,5 @@
 import { Account as BaseAccount } from 'stellar-base';
-import { ServerAccountRecord, HorizonResponseLink, HorizonAccountThresholds, HorizonFlags, HorizonBalanceLine, HorizonAccountSigner, ServerEffectRecord, ServerOfferRecord, ServerOperationRecord, ServerPaymentOperationRecord, ServerCallCollectionFunction, ServerTradeRecord } from './types';
+import { ServerAccountRecord, HorizonResponseLink, HorizonAccountThresholds, HorizonFlags, HorizonBalanceLine, HorizonAccountSigner, ServerEffectRecord, ServerOfferRecord, ServerOperationRecord, ServerPaymentOperationRecord, ServerCallCollectionFunction, ServerTradeRecord, ServerTransactionRecord } from './types';
 
 export class AccountResponse implements ServerAccountRecord{
 
@@ -33,6 +33,7 @@ export class AccountResponse implements ServerAccountRecord{
   operations!: ServerCallCollectionFunction<ServerOperationRecord>;
   payments!: ServerCallCollectionFunction<ServerPaymentOperationRecord>;
   trades!: ServerCallCollectionFunction<ServerTradeRecord>;
+  transactions!: ServerCallCollectionFunction<ServerTransactionRecord>;
 
   constructor(response: ServerAccountRecord) {
     this.baseAccount = new BaseAccount(response.account_id, response.sequence);

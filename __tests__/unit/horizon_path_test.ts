@@ -46,35 +46,35 @@ const testHorizonPaths = (serverUrl: string) => {
     expect(transactions).toEqual(randomResult.data);
   })
 
-  it(`server.transaction().includeFailed(true) ${serverUrl}`, async() => {
+  it(`server.transaction().includeFailed(true) ${serverUrl}`, async () => {
     prepareAxios(serverUrl, '/transactions?include_failed=true', randomResult);
     expect.assertions(1);
     const transactions = await server.transactions().includeFailed(true).call();
     expect(transactions).toEqual(randomResult.data);
   })
 
-  it(`server.operations().includeFailed(true) ${serverUrl}`, async() => {
+  it(`server.operations().includeFailed(true) ${serverUrl}`, async () => {
     prepareAxios(serverUrl, '/operations?include_failed=true', randomResult);
     expect.assertions(1);
     const operations = await server.operations().includeFailed(true).call();
     expect(operations).toEqual(randomResult.data);
   })
 
-  it(`server.transactions().transaction('fooTransactionId')  ${serverUrl}`, async() => {
+  it(`server.transactions().transaction('fooTransactionId')  ${serverUrl}`, async () => {
     prepareAxios(serverUrl, '/transactions/fooTransactionId', randomResult);
     expect.assertions(1);
     const transaction = await server.transactions().transaction('fooTransactionId').call();
     expect(transaction).toEqual(randomResult.data);
   })
 
-  it(`server.transactions().forAccount('fooAccountId) ${serverUrl}`, async() => {
+  it(`server.transactions().forAccount('fooAccountId) ${serverUrl}`, async () => {
     prepareAxios(serverUrl, '/accounts/fooAccountId/transactions', randomResult);
     expect.assertions(1);
     const transactions = await server.transactions().forAccount('fooAccountId').call();
     expect(transactions).toEqual(randomResult.data);
   })
 
-  it(`server.submitTransaction() ${serverUrl}`, async() => {
+  it(`server.submitTransaction() ${serverUrl}`, async () => {
     randomResult.data.endpoint = 'post';
     const keypair = StellarSdk.Keypair.random();
     const account = new StellarSdk.Account(keypair.publicKey(), '56199647068161');
@@ -90,7 +90,7 @@ const testHorizonPaths = (serverUrl: string) => {
     const tx = encodeURIComponent(fakeTransaction.toEnvelope().toXDR().toString('base64'));
     // when(horizonAxiosClientMock.get).calledWith(`${serverUrl}/transactions?tx=${tx}`).mockResolvedValue(randomResult);
     horizonAxiosClientMock.post.mockResolvedValue(randomResult);
-    
+
     expect.assertions(1);
     const response = await server.submitTransaction(fakeTransaction);
     expect(response).toEqual(randomResult.data);
@@ -104,12 +104,12 @@ describe('horizon path tests', () => {
   });
 
   ;[
-  //server url without folder path.
-  'https://acme.com:1337',
-  //server url folder path.
-  'https://acme.com:1337/folder',
-  //server url folder and subfolder path.
-  'https://acme.com:1337/folder/subfolder'
+    //server url without folder path.
+    'https://acme.com:1337',
+    //server url folder path.
+    'https://acme.com:1337/folder',
+    //server url folder and subfolder path.
+    'https://acme.com:1337/folder/subfolder'
   ].forEach(serverUrl => {
     testHorizonPaths(serverUrl);
   });
